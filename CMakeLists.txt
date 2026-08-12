@@ -19,12 +19,17 @@ set_target_properties(learn PROPERTIES
     CUDA_STANDARD 20
 )
 
-target_include_directories(${PROJECT_NAME}
+target_compile_options(${PROJECT_NAME}
     PRIVATE
-    ${PROJECT_SOURCE_DIR}/include
+    -I${PROJECT_SOURCE_DIR}/include
+    -I${PROJECT_SOURCE_DIR}/include/cutlass/include
+    -I${PROJECT_SOURCE_DIR}/include/cutlass/tools/util/include
+    -I/usr/local/cuda/targets/x86_64-linux/include/cccl
+    -I/usr/local/cuda/targets/x86_64-linux/include
 )
 
-target_compile_options(learn PRIVATE
+target_compile_options(${PROJECT_NAME}
+    PRIVATE
     $<$<COMPILE_LANGUAGE:CUDA>:
         -lineinfo
         -enable-tile
