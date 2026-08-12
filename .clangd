@@ -1,0 +1,25 @@
+CompileFlags:
+  Add:
+    - --std=c++20
+    - -I/usr/local/cuda-13.3/targets/x86_64-linux/include
+    - -I/usr/local/cuda-13.3/targets/x86_64-linux/include/cccl
+    - --cuda-path=/usr/local/cuda-13.3
+    - --cuda-gpu-arch=sm_89
+    - -xcuda
+
+  Remove:
+    - "-Xfatbin*"
+    - "-gencode*"
+    - "--generate-code*"
+    - "-ccbin*"
+    - "--compiler-options*"
+    - "--expt-extended-lambda"
+    - "--expt-relaxed-constexpr"
+    - "-forward-unknown-to-host-compiler"
+    - "-Werror=cross-execution-space-call"
+
+Diagnostics:
+  Suppress:
+    - "variadic_device_fn"
+    - "attributes_not_allowed"
+    - "kern_call_not_global_function"
