@@ -33,7 +33,7 @@ __global__ void mmaAtom_m16n8k16_f32f16f16f32_TN(half *a, half *b, float *c) {
                          Stride<Stride<_32, _1>, Stride<_16, _8>>>;
 
   auto ta = make_tensor(a, Shape<_16, _16>{}, LayoutRight{});
-  auto tb = make_tensor(b, Shape<_8, _16>{}, LayoutLeft{});
+  auto tb = make_tensor(b, Shape<_8, _16>{});
   auto tc = make_tensor(c, Shape<_16, _8>{}, LayoutRight{});
 
 
