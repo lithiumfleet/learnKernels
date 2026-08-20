@@ -1,19 +1,23 @@
 // https://zhuanlan.zhihu.com/p/667521327
+#include "cute/arch/mma_sm80.hpp"
 #include <cute/atom/mma_traits.hpp>
 #include <cute/layout.hpp>
 #include <cute/numeric/numeric_types.hpp>
-#include "cute/arch/mma_sm80.hpp"
 #include <cute/tensor.hpp>
 
 template <typename T, const int TM, int TN, const int TK, typename TiledMMA>
 __global__ void simple_gemm(T *C, const T *A, const T *B, int M, int N, int K) {
   using namespace cute;
-  auto tA =
-      make_tensor(make_gmem_ptr(A), make_shape(M, K), make_stride(K, Int<1>{}));
-  auto tB =
-      make_tensor(make_gmem_ptr(B), make_shape(N, K), make_stride(K, Int<1>{}));
-  auto tC =
-      make_tensor(make_gmem_ptr(C), make_shape(M, N), make_stride(N, Int<1>{}));
+  // https://docs.nvidia.com/cutlass/latest/media/docs/cpp/cute/0x_gemm_tutorial.html
+  // for NT strides: ABC all LayoutLeft
+  // for TN strides: AB LayoutRight C LayoutLeft
+  // so C always in row-major/N-major, A always uses (M,K) shape, B always uses
+  // (N,K) shape and NT for AB: T means use K-major, N means use Non-K-major.
+
+  // A is marked as T so use K-major == col-major == LayoutLeft{}
+  auto tA = make_tensor(A, make_layout(make_shape(M, K)));
+  auto tB = make_tensor(B, make_layout(make_shape(N, K), LayoutRight{}));
+  auto tC = make_tensor(C, make_layout(make_shape(M, N), LayoutRight{}));
 
   int rid = blockIdx.y, cid = blockIdx.x;
 
@@ -23,7 +27,8 @@ __global__ void simple_gemm(T *C, const T *A, const T *B, int M, int N, int K) {
   auto gC =
       local_tile(tC, make_tile(Int<TM>{}, Int<TN>{}), make_coord(rid, cid));
 
-  // tmma in SM80_16x8x16_F16F16F16F16_TN & A in (2,2,1) B in (1,2,1) => 32x16x16
+  // tmma in SM80_16x8x16_F16F16F16F16_TN & A in (2,2,1) B in (1,2,1) =>
+  // 32x16x16
   TiledMMA tmma;
   auto thrMma = tmma.get_slice(threadIdx.x);
 
